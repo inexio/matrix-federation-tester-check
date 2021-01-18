@@ -22,7 +22,7 @@ type ErrorAndCode struct {
 func CheckFederationSuccess () []ErrorAndCode{
 	var errSlice []ErrorAndCode
 	request := Client.SetDebugBodyLimit(1000).R()
-	response, err := request.Get("https://matrix.org/federationtester/api/report?server_name=thola.io")
+	response, err := request.Get("https://localhost:8080api/report?server_name=thola.io")
 	if err != nil {
 		errSlice = append(errSlice, ErrorAndCode{3, errors.Wrap(err, "error during http request")})
 		return errSlice
