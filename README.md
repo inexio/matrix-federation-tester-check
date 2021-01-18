@@ -1,2 +1,2 @@
-# synapse-check
-this is a monitoring check plugin for matrix-synapse written in go
+# matrix-federation-tester-check
+this is a monitoring check plugin for matrix-federation-tester written in go
