@@ -2,11 +2,18 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/go-resty/resty/v2"
 	"github.com/inexio/go-monitoringplugin"
+	"github.com/jessevdk/go-flags"
 	"github.com/pkg/errors"
+	"os"
 )
 
+var opts struct{
+	URL 		string `short:"u" long:"url" description:"The url for requesting the federation check" required:"true"`
+	ServerName 	string `short:"n" long:"server-name" description:"The Server name that you specified in the synapse configuration" required:"true"`
+}
 
 type CheckFederation struct {
 	FederationOK bool `json:"FederationOK"`
@@ -17,11 +24,16 @@ type ErrorAndCode struct {
 	Error    error
 }
 
-func CheckFederationSuccess() []ErrorAndCode {
+func CheckFederationSuccess(url string, serverName string) []ErrorAndCode {
 	var errSlice []ErrorAndCode
+	if url == "" || serverName == ""{
+		errSlice = append(errSlice, ErrorAndCode{2, errors.New("URL and server name is required to send GET request")})
+		return errSlice
+	}
+	url = url + serverName
 	client := resty.New()
 	request := client.SetDebugBodyLimit(1000).R()
-	response, err := request.Get("http://localhost:8080/api/report?server_name=thola.io")
+	response, err := request.Get(url)
 	if err != nil {
 		errSlice = append(errSlice, ErrorAndCode{3, errors.Wrap(err, "error during http request")})
 		return errSlice
@@ -47,6 +59,12 @@ func OutputMonitoring(errSlice []ErrorAndCode, defaultMessage string) {
 
 func main() {
 	var errSlice []ErrorAndCode
-	errSlice = CheckFederationSuccess()
-	OutputMonitoring(errSlice, "succeeded")
+	var err error
+	_, err = flags.ParseArgs(&opts, os.Args)
+	if err != nil {
+		fmt.Println("error parsing flags")
+		os.Exit(3)
+	}
+	errSlice = CheckFederationSuccess(opts.URL, opts.ServerName)
+	OutputMonitoring(errSlice, "successfully checked: " + opts.ServerName)
 }
