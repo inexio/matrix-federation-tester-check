@@ -7,7 +7,6 @@ import (
 	"github.com/pkg/errors"
 )
 
-var Client = resty.New()
 
 type CheckFederation struct {
 	FederationOK bool `json:"FederationOK"`
@@ -20,7 +19,8 @@ type ErrorAndCode struct {
 
 func CheckFederationSuccess() []ErrorAndCode {
 	var errSlice []ErrorAndCode
-	request := Client.SetDebugBodyLimit(1000).R()
+	client := resty.New()
+	request := client.SetDebugBodyLimit(1000).R()
 	response, err := request.Get("http://localhost:8080/api/report?server_name=thola.io")
 	if err != nil {
 		errSlice = append(errSlice, ErrorAndCode{3, errors.Wrap(err, "error during http request")})
@@ -37,7 +37,7 @@ func CheckFederationSuccess() []ErrorAndCode {
 
 }
 
-func OutputMonitoring(errSlice []ErrorAndCode, defaultMessage string, performanceDataSlice []monitoringplugin.PerformanceDataPoint) {
+func OutputMonitoring(errSlice []ErrorAndCode, defaultMessage string) {
 	response := monitoringplugin.NewResponse(defaultMessage)
 	for i := 0; i < len(errSlice); i++ {
 		response.UpdateStatus(errSlice[i].ExitCode, errSlice[i].Error.Error())
@@ -48,5 +48,5 @@ func OutputMonitoring(errSlice []ErrorAndCode, defaultMessage string, performanc
 func main() {
 	var errSlice []ErrorAndCode
 	errSlice = CheckFederationSuccess()
-	OutputMonitoring(errSlice, "true", nil)
+	OutputMonitoring(errSlice, "true")
 }
