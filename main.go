@@ -3,10 +3,9 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/davecgh/go-spew/spew"
-	"github.com/go-resty/resty"
-	"github.com/pkg/errors"
+	"github.com/go-resty/resty/v2"
 	"github.com/inexio/go-monitoringplugin"
+	"github.com/pkg/errors"
 )
 
 var Client = resty.New()
@@ -31,10 +30,10 @@ func CheckFederationSuccess () []ErrorAndCode{
 	var resp CheckFederation
 	err = json.Unmarshal(response.Body(), &resp)
 	if resp.FederationOK != true {
-		errSlice = append(errSlice, ErrorAndCode{2, errors.New("The federation check is not successfull, please check what´s wrong")})
+		errSlice = append(errSlice, ErrorAndCode{2, errors.New("The federation check is not successful, please check what´s wrong")})
 		return errSlice
 	} else {
-		errSlice = append(errSlice, ErrorAndCode{1, errors.New("Federation Check succeeded")})
+		errSlice = append(errSlice, ErrorAndCode{0, errors.New("Federation Check succeeded")})
 		return errSlice
 	}
 
@@ -45,12 +44,6 @@ func OutputMonitoring(errSlice []ErrorAndCode, defaultMessage string, performanc
 	for i := 0; i < len(errSlice); i++ {
 		response.UpdateStatus(errSlice[i].ExitCode, errSlice[i].Error.Error())
 	}
-	for i := 0; i < len(performanceDataSlice); i++ {
-		err := response.AddPerformanceDataPoint(&performanceDataSlice[i])
-		if err != nil {
-			spew.Dump(err)
-		}
-	}
 	response.OutputAndExit()
 }
 
@@ -58,5 +51,6 @@ func OutputMonitoring(errSlice []ErrorAndCode, defaultMessage string, performanc
 func main () {
 	var errSlice []ErrorAndCode
 	errSlice = CheckFederationSuccess()
+	OutputMonitoring(errSlice, "true", nil)
 	fmt.Println(errSlice)
 }
