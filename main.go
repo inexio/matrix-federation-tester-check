@@ -48,5 +48,5 @@ func OutputMonitoring(errSlice []ErrorAndCode, defaultMessage string) {
 func main() {
 	var errSlice []ErrorAndCode
 	errSlice = CheckFederationSuccess()
-	OutputMonitoring(errSlice, "federation test succeeded")
+	OutputMonitoring(errSlice, "succeeded")
 }
